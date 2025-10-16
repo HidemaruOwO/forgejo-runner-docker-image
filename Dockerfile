@@ -13,13 +13,14 @@ ARG NODE_VERSION
 COPY --from=node-source /usr/local/bin/node /usr/local/bin/node
 COPY --from=node-source /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
 
+USER root
+
 # Symlink npm and other tools to make them available in PATH
 RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm && \
     ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx && \
     ln -sf /usr/local/lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack && \
     chmod +x /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 
-USER root
 
 # Install required packages
 RUN apk add --no-cache \
