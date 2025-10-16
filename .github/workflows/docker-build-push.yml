@@ -49,11 +49,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ${{ matrix.docker-variant == 'dind' && 'Dockerfile.dind' || matrix.docker-variant == 'dind-rootless' && 'Dockerfile.dind-rootless' || 'Dockerfile.cli' }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NODE_VERSION=${{ matrix.node-version }}
-            DOCKER_VARIANT=${{ matrix.docker-variant }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
