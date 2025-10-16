@@ -14,6 +14,7 @@ COPY --from=node-source /usr/local/bin/node /usr/local/bin/
 COPY --from=node-source /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=node-source /usr/local/bin/npm /usr/local/bin/
 COPY --from=node-source /usr/local/bin/npx /usr/local/bin/
+COPY --from=node-source /usr/local/bin/corepack /usr/local/bin/
 
 # Install required packages
 RUN apk add --no-cache \
@@ -26,7 +27,29 @@ RUN apk add --no-cache \
     py3-pip \
     build-base \
     git-lfs \
-    && npm install -g npm@latest
+    jq \
+    yq \
+    ca-certificates \
+    openssl \
+    gnupg \
+    rsync \
+    which \
+    tzdata \
+    zip \
+    unzip \
+    xz \
+    zstd \
+    coreutils \
+    findutils \
+    grep \
+    sed \
+    gawk \
+    sudo \
+    docker-cli-compose \
+    docker-cli-buildx \
+    && npm install -g npm@latest \
+    && corepack enable \
+    && git lfs install
 
 WORKDIR /workspace
 

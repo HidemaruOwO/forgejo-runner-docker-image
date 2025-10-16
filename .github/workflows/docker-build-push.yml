@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18, 20, 22]
-        docker-variant: [dind, dind-rootless]
+        docker-variant: [cli, dind, dind-rootless]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,7 +44,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=node${{ matrix.node-version }}-${{ matrix.docker-variant }}
-            type=raw,value=node${{ matrix.node-version }}-${{ matrix.docker-variant }}-{{date 'YYYYMMDD'}}
             type=raw,value=latest,enable=${{ matrix.node-version == '20' && matrix.docker-variant == 'dind' }}
 
       - name: Build and push Docker image
