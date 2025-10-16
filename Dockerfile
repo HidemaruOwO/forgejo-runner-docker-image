@@ -16,6 +16,8 @@ COPY --from=node-source /usr/local/bin/npm /usr/local/bin/
 COPY --from=node-source /usr/local/bin/npx /usr/local/bin/
 COPY --from=node-source /usr/local/bin/corepack /usr/local/bin/
 
+USER root
+
 # Install required packages
 RUN apk add --no-cache \
     bash \
