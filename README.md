@@ -1,6 +1,6 @@
 <div align="center">
 
-# forgejo-runner-docker-image
+# Docker Image for Forgejo Runner
 
 ![docker-nodejs](docs/docker-nodejs.png)
 
