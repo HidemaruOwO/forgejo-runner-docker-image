@@ -1,0 +1,40 @@
+name: Build and Push Docker Image (DooD)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: docker
+    container:
+      image: ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-cli
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Verify Docker access
+        run: docker info
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Forgejo Container Registry
+        run: |
+          echo "${{ secrets.FORGEJO_TOKEN }}" | \
+            docker login ${{ github.server_url }} \
+            -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ github.server_url }}/${{ github.repository }}:${{ github.sha }} .
+          docker build \
+            -t ${{ github.server_url }}/${{ github.repository }}:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push \
+            ${{ github.server_url }}/${{ github.repository }}:${{ github.sha }}
+          docker push \
+            ${{ github.server_url }}/${{ github.repository }}:latest

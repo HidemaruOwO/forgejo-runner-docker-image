@@ -12,6 +12,32 @@ Docker images for Forgejo CI/CD runners with various Node.js versions and Docker
 
 ## Usage
 
+### In Forgejo Actions
+
+For using these images in Forgejo Actions workflows, see the [Forgejo Actions Guide](docs/FORGEJO_ACTIONS_GUIDE.md).
+
+**Quick example:**
+```yaml
+jobs:
+  build:
+    runs-on: docker
+    container:
+      image: ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind
+      options: --privileged
+    steps:
+      - name: Start Docker daemon
+        run: |
+          dockerd-entrypoint.sh &
+          # Wait for daemon to be ready
+          for i in {1..30}; do
+            if docker info >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+      # ... your build steps
+```
+
+### In Docker CLI
+
 - dind/dind-rootless (DinD): Run Docker daemon inside the container.
   - dind: `docker run -d --name runner --privileged ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind`
   - dind-rootless: `docker run -d --name runner-rootless --security-opt seccomp=unconfined --device /dev/fuse --tmpfs /tmp --tmpfs /run ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind-rootless`

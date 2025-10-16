@@ -1,0 +1,55 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: docker
+    container:
+      image: ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind
+      options: --privileged
+    steps:
+      - name: Start Docker daemon
+        run: |
+          # Start Docker daemon in background
+          dockerd-entrypoint.sh &
+
+          # Wait for Docker daemon to be ready
+          echo "Waiting for Docker daemon to start..."
+          for i in {1..30}; do
+            if docker info >/dev/null 2>&1; then
+              echo "Docker daemon is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 1
+          done
+
+          # Verify Docker is working
+          docker info
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Forgejo Container Registry
+        run: |
+          echo "${{ secrets.FORGEJO_TOKEN }}" | \
+            docker login ${{ github.server_url }} \
+            -u ${{ github.actor }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ github.server_url }}/${{ github.repository }}:${{ github.sha }} .
+          docker build \
+            -t ${{ github.server_url }}/${{ github.repository }}:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push \
+            ${{ github.server_url }}/${{ github.repository }}:${{ github.sha }}
+          docker push \
+            ${{ github.server_url }}/${{ github.repository }}:latest
