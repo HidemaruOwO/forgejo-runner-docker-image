@@ -49,4 +49,3 @@ RUN apk add --no-cache \
 
 WORKDIR /workspace
 
-ENTRYPOINT ["tail", "-f", "/dev/null"]
