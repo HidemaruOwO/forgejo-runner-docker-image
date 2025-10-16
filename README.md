@@ -17,6 +17,11 @@ docker pull ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
 docker run -d ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
 ```
 
+- Runner labels
+```yaml
+labels: ["host", "docker:docker://ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest" ]
+```
+
 ## Dependencies
 
 - Docker (for pulling and running the images)
