@@ -1,6 +1,25 @@
+<div align="center">
+
 # forgejo-runner-docker-image
 
+![docker-nodejs](docs/docker-nodejs.png)
+
+## What is this?
+
 Docker images for Forgejo CI/CD runners with various Node.js versions and Docker variants.
+
+</div>
+
+## Usage
+
+```bash
+docker pull ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
+docker run -d ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
+```
+
+## Dependencies
+
+- Docker (for pulling and running the images)
 
 ## Available Images
 
@@ -15,29 +34,22 @@ Images are automatically built and pushed to GitHub Container Registry (ghcr.io)
 - `ghcr.io/hidemaruowo/forgejo-runner-docker-image:node18-dind-rootless` - Node.js 18 with docker:dind-rootless
 - `ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind-rootless` - Node.js 20 with docker:dind-rootless
 - `ghcr.io/hidemaruowo/forgejo-runner-docker-image:node22-dind-rootless` - Node.js 22 with docker:dind-rootless
+- `ghcr.io/hidemaruowo/forgejo-runner-docker-image:node18-cli` - Node.js 18 with docker:cli
+- `ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-cli` - Node.js 20 with docker:cli
+- `ghcr.io/hidemaruowo/forgejo-runner-docker-image:node22-cli` - Node.js 22 with docker:cli
 
 ## What's Included
 
 Each image includes:
-- Docker (dind or dind-rootless variant)
+
+- Docker (dind or dind-rootless, cli variant)
 - Node.js (version 18, 20, or 22)
-- npm (latest version)
+- npm
+- corepack
 - bash
 - curl
 - wget
 - git
-- git-lfs
-- openssh-client
-- python3
-- py3-pip
-- build-base
-
-## Usage
-
-```bash
-docker pull ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
-docker run -d ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
-```
 
 ## Building Locally
 
@@ -57,6 +69,11 @@ docker build --build-arg NODE_VERSION=22 --build-arg DOCKER_VARIANT=dind-rootles
 ## Automated Builds
 
 Images are automatically built and published:
+
 - Monthly on the 1st of each month at 00:00 UTC
 - On every push to the main branch
 - Can be triggered manually via workflow_dispatch
+
+## Reference
+
+- Repository: https://github.com/HidemaruOwO/forgejo-runner-docker-image
