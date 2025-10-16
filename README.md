@@ -12,10 +12,15 @@ Docker images for Forgejo CI/CD runners with various Node.js versions and Docker
 
 ## Usage
 
-```bash
-docker pull ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
-docker run -d ghcr.io/hidemaruowo/forgejo-runner-docker-image:latest
-```
+- dind/dind-rootless (DinD): Run Docker daemon inside the container.
+  - dind: `docker run -d --name runner --privileged ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind`
+  - dind-rootless: `docker run -d --name runner-rootless --security-opt seccomp=unconfined --device /dev/fuse --tmpfs /tmp --tmpfs /run ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-dind-rootless`
+  - Verify: `docker exec runner docker info`
+  - Note: add `-e DOCKER_TLS_CERTDIR=""` if you disable TLS or expose TCP manually.
+
+- cli (DooD): Use host Docker via socket bind-mount.
+  - `docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/hidemaruowo/forgejo-runner-docker-image:node20-cli bash`
+  - Inside the container, `docker ps` talks to the host daemon.
 
 ## Dependencies
 
