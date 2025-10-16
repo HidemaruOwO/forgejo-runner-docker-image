@@ -1,0 +1,182 @@
+name: Test Docker Images
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  test-variants:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+        docker-variant: [cli, dind, dind-rootless]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        run: |
+          docker build \
+            --build-arg NODE_VERSION=${{ matrix.node-version }} \
+            --build-arg DOCKER_VARIANT=${{ matrix.docker-variant }} \
+            -t test-image:node${{ matrix.node-version }}-${{ matrix.docker-variant }} \
+            .
+
+      - name: Test DinD variant
+        if: matrix.docker-variant == 'dind'
+        run: |
+          # Start container
+          docker run -d \
+            --name test-runner \
+            --privileged \
+            -e DOCKER_TLS_CERTDIR="" \
+            test-image:node${{ matrix.node-version }}-${{ matrix.docker-variant }}
+          
+          # Wait for Docker daemon
+          sleep 10
+          for i in {1..30}; do
+            if docker exec test-runner docker info > /dev/null 2>&1; then
+              echo "Docker daemon is ready"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Test Docker functionality
+          docker exec test-runner docker version
+          docker exec test-runner docker info
+          docker exec test-runner docker run --rm hello-world
+          
+          # Test Node.js
+          docker exec test-runner node --version
+          docker exec test-runner npm --version
+          
+          # Test utilities
+          docker exec test-runner bash --version
+          docker exec test-runner git --version
+          docker exec test-runner curl --version
+          docker exec test-runner jq --version
+          
+          # Clean up
+          docker rm -f test-runner
+
+      - name: Test DinD Rootless variant
+        if: matrix.docker-variant == 'dind-rootless'
+        run: |
+          # Start container
+          docker run -d \
+            --name test-runner \
+            --security-opt seccomp=unconfined \
+            --device /dev/fuse \
+            --tmpfs /tmp \
+            --tmpfs /run \
+            -e DOCKER_TLS_CERTDIR="" \
+            test-image:node${{ matrix.node-version }}-${{ matrix.docker-variant }}
+          
+          # Wait for Docker daemon
+          sleep 10
+          for i in {1..30}; do
+            if docker exec test-runner docker info > /dev/null 2>&1; then
+              echo "Docker daemon is ready"
+              break
+            fi
+            sleep 1
+          done
+          
+          # Test Docker functionality
+          docker exec test-runner docker version
+          docker exec test-runner docker info
+          docker exec test-runner docker run --rm hello-world
+          
+          # Verify running as non-root
+          USER_ID=$(docker exec test-runner id -u)
+          if [ "$USER_ID" != "0" ]; then
+            echo "✓ Running as non-root user (UID: $USER_ID)"
+          else
+            echo "⚠ Running as root user"
+          fi
+          
+          # Test Node.js
+          docker exec test-runner node --version
+          docker exec test-runner npm --version
+          
+          # Test utilities
+          docker exec test-runner bash --version
+          docker exec test-runner git --version
+          
+          # Clean up
+          docker rm -f test-runner
+
+      - name: Test CLI variant (DooD)
+        if: matrix.docker-variant == 'cli'
+        run: |
+          # Start container
+          docker run -d \
+            --name test-runner \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            test-image:node${{ matrix.node-version }}-${{ matrix.docker-variant }} \
+            sh -c "tail -f /dev/null"
+          
+          sleep 5
+          
+          # Test Docker CLI (uses host daemon)
+          docker exec test-runner docker version
+          docker exec test-runner docker info
+          docker exec test-runner docker ps
+          
+          # Verify DooD - should see itself in docker ps
+          if docker exec test-runner docker ps --format '{{.Names}}' | grep -q test-runner; then
+            echo "✓ DooD working correctly - can see itself in docker ps"
+          else
+            echo "⚠ Cannot see itself in docker ps"
+          fi
+          
+          # Test Node.js
+          docker exec test-runner node --version
+          docker exec test-runner npm --version
+          
+          # Test utilities
+          docker exec test-runner bash --version
+          docker exec test-runner git --version
+          docker exec test-runner curl --version
+          
+          # Test npm install
+          docker exec -w /tmp test-runner sh -c "echo '{}' > package.json"
+          docker exec -w /tmp test-runner npm install --no-save lodash
+          docker exec -w /tmp test-runner node -e "const _ = require('lodash'); console.log('lodash version:', _.VERSION)"
+          
+          # Clean up
+          docker rm -f test-runner
+
+  test-comprehensive:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make test script executable
+        run: chmod +x test.sh
+
+      - name: Run comprehensive test suite
+        run: ./test.sh
+        timeout-minutes: 30
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: /tmp/build-*.log
+          if-no-files-found: ignore

@@ -2,6 +2,10 @@
 *.log
 *.tmp
 
+# Test artifacts
+/tmp/build-*.log
+test-results/
+
 # OS files
 .DS_Store
 Thumbs.db

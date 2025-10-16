@@ -79,6 +79,28 @@ Images are automatically built and published:
 - On every push to the main branch
 - Can be triggered manually via workflow_dispatch
 
+## Testing
+
+This repository includes comprehensive tests for all Docker variants (DinD, DinD rootless, and CLI/DooD).
+
+### Quick Test
+
+Test a specific variant:
+```bash
+./test-variant.sh 20 dind
+```
+
+### Comprehensive Test Suite
+
+Run all tests:
+```bash
+./test.sh
+```
+
+For detailed testing documentation, see:
+- [TESTING.md](TESTING.md) - Complete testing guide with DinD vs DooD explanation
+- [TEST_RESULTS.md](TEST_RESULTS.md) - Test execution results and troubleshooting
+
 ## Reference
 
 - Repository: https://github.com/HidemaruOwO/forgejo-runner-docker-image
