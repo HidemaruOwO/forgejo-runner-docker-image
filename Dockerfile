@@ -45,8 +45,6 @@ RUN apk add --no-cache \
     sed \
     gawk \
     sudo \
-    docker-cli-compose \
-    docker-cli-buildx \
     && npm install -g npm@latest \
     && corepack enable \
     && git lfs install
